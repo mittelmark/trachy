@@ -7,7 +7,7 @@
 } 
 \usage{ trachy_mds_plot(x,method="euclidean",p=0.5,row.labels=TRUE,points=FALSE, 
         col.labels='black',cex.labels=1, pch=19, cex=1,col="grey50", grid=TRUE, 
-        xlab="Dim 1",ylab="Dim 2",...) } 
+        group.mean=FALSE, xlab="Dim 1",ylab="Dim 2",...) } 
 \arguments{ 
   \item{x}{ 
     data frame or matrix  
@@ -28,6 +28,7 @@
   \item{cex}{default character expansion for the points, default: 1} 
   \item{col}{default color for the points, default: 'grey50'} 
   \item{grid}{should a grid being show, default: TRUE} 
+  \item{group.mean}{should a mean based on the given color codes being computed, default: FALSE} 
   \item{xlab}{label for the x-axis, default: 'Dim 1'} 
   \item{ylab}{label for the y-axis, default: 'Dim 2'} 
   \item{\ldots}{delegating all remaining arguments to plot, points and text calls} 

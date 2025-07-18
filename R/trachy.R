@@ -72,7 +72,7 @@ trachy_bottom_legend = trachy$bottom_legend
 #' }
 #' \usage{ trachy_mds_plot(x,method="euclidean",p=0.5,row.labels=TRUE,points=FALSE,
 #'         col.labels='black',cex.labels=1, pch=19, cex=1,col="grey50", grid=TRUE,
-#'         xlab="Dim 1",ylab="Dim 2",...) }
+#'         group.mean=FALSE, xlab="Dim 1",ylab="Dim 2",...) }
 #' \arguments{
 #'   \item{x}{
 #'     data frame or matrix 
@@ -93,6 +93,7 @@ trachy_bottom_legend = trachy$bottom_legend
 #'   \item{cex}{default character expansion for the points, default: 1}
 #'   \item{col}{default color for the points, default: 'grey50'}
 #'   \item{grid}{should a grid being show, default: TRUE}
+#'   \item{group.mean}{should a mean based on the given color codes being computed, default: FALSE}
 #'   \item{xlab}{label for the x-axis, default: 'Dim 1'}
 #'   \item{ylab}{label for the y-axis, default: 'Dim 2'}
 #'   \item{\ldots}{delegating all remaining arguments to plot, points and text calls}
@@ -119,7 +120,7 @@ trachy_bottom_legend = trachy$bottom_legend
 trachy$mds_plot = function (x,method="euclidean",p=0.5,row.labels=TRUE,
                             points=FALSE,col.labels='black', 
                             cex.labels=1,pch=19,cex=1,col="grey50",
-                            grid=TRUE,xlab="Dim 1",ylab="Dim 2",...) {
+                            grid=TRUE,group.mean=FALSE,xlab="Dim 1",ylab="Dim 2",...) {
     if (length(method)>1) {
         opar=par(mfrow=c(2,ceiling(length(method)/2)))
     }
@@ -138,6 +139,11 @@ trachy$mds_plot = function (x,method="euclidean",p=0.5,row.labels=TRUE,
         diff=diff(limits)*0.05
         xlim=c(limits[1]-diff,limits[2]+diff)
         ylim=xlim
+        if (group.mean) {
+            cmd2=aggregate(cmd,by=list(col),mean)
+            cmd=cmd2[,2:3]
+            col=cmd2[,1]
+        }
         plot(cmd,type="n",xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab, ...)
         if (grid) {
             grid(col=1,lty=2,lwd=0.5)

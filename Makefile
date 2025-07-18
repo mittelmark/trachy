@@ -1,6 +1,6 @@
 VERSION := $(shell grep Version: DESCRIPTION | perl -pe 's/.+: //')
 PKG     := $(shell basename `pwd`)
-build: man/add.Rd
+build: man/trachy.Rd man/trachy-package.Rd
 	R CMD build .
 
 check: build 

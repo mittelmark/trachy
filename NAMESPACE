@@ -1,1 +1,4 @@
 exportPattern("^[[:lower:]]+")
+importFrom("graphics", "par", "text", "title", "legend")
+importFrom("stats","aggregate","dist","rnorm")
+importFrom("utils","read.table")

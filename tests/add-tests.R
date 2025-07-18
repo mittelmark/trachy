@@ -1,4 +1,4 @@
-library(Rpkg)
+library(trachy)
 
 x = 2 + 2
 
@@ -6,8 +6,8 @@ if (x != 4) {
     stop("Error: Something strange happened!!")
 }
 
-x = add(2,2)
+x = trachy$tdata("meta")
 
-if (x != 4) {
-    stop("Error: Something strange happened in add(2,2)!!")
+if (nrow(x) < 10) {
+    stop("Error: Something strange happened in trachy$tdata('meta')!!")
 }

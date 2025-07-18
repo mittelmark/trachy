@@ -1,7 +1,7 @@
 ---
-title: "Vignette for the package ..."
-author: Max Musterman
-date: 2023-09-03 10:09
+title: "Datanalysis for the Trachypithecus Data"
+author: Detlef Groth and Truong Van Nguyen
+date: 2025-07-18 17:18
 output: 
     rmarkdown::html_vignette:
         toc: true
@@ -22,35 +22,451 @@ library(knitr)
 
 ## Introduction
 
-Below you find example code for the package...
+This is the vignette for the package [trachy](https://github.com/mittelmark/trachy) which contains the data and the code
+for the paper of Truong et. al. (2025). DNA metabarcoding reveals dietary adaptations of Trachypithecus langurs in limestone and rainforest habitats. (in preparation)
+
+The code below was used to create the figures for the statistical analysis which were submitted with the written text.
+
+## Data preparation
+
+Let's first load and show the data which are part of the  package.  The can be
+loaded using the `trachy$tdata` method. We start with the meta data.
 
 ```{r}
-x=1
-print(x)
+library(trachy)
+if (!require("sbi")) {
+    install.packages("https://github.com/mittelmark/sbi/releases/download/v0.1.0/sbi_0.1.0.tar.gz",repos=NULL)
+}
+library(sbi)
+meta=trachy$tdata('meta')
+head(meta)
 ```
 
-## Plot example
+Below a summary of the samples:
 
-```{r fig=TRUE,fig.width=9,fig.height=6}
-data(iris)
-par(mfrow=c(1,2),mai=rep(0.8,4))
-plot(iris$Sepal.Width~iris$Sepal.Length,
-    col=as.numeric(iris$Species)+1,pch=15)
-plot(iris$Petal.Width~iris$Petal.Length,
-    col=as.numeric(iris$Species)+1,pch=15)
+```{r}
+with(meta,ftable(species,habitat,seasonal))
 ```
 
-## Table Example
+## Family Data Analyis
+
+Let's now load the raw family data:
+
+```{r}
+options(width=120)
+fmly=trachy$tdata('family')
+dim(fmly)
+fmly[1:4,1:10]
+```
+
+Let's merge both tables now into one to attach season and habitat  information
+to the data set:
+
+
+```{r}
+mdata=merge(fmly,unique(meta[,c('habitat','code','seasonal')]))
+dim(mdata)
+mdata[1:8,1:8]
+```
+
+Let's reorder the columns so that we have meta information first and the NGS data.
+
+
+### Season Medians
+
+Let's calculate the season means. For this we first merge the data:
+
+```{r}
+agg=with(mdata,aggregate(mdata[,6:(ncol(mdata))],
+    by=list(seasonal,species),median))
+colnames(agg)[1]="Season"
+colnames(agg)[2]="Species"
+agg[,1:10]
+```
+
+Let's tabulate this:
 
 ```{r results="asis"}
-knitr::kable(head(iris))
+library(knitr)
+aggr=agg[,1:12]
+aggr[,3:12]=round(aggr[,3:12],1)
+aggr[,2]=gsub(" ","",aggr[,2])
+colnames(aggr)=substr(colnames(aggr),1,6)
+colnames(aggr)[1]="Season"
+colnames(aggr)[2]="Species"
+knitr::kable(aggr)
 ```
 
-## Inline expression
 
-The dataset iris has `r nrow(iris)` plants.
+### Visualization of Plant family similarities using MDS
 
-## EOF
+
+```{r fig=TRUE,fig.width=8,fig.height=8,out.width=800}
+par(mai=c(0.8,0.8,0.5,0.2))
+M=t(as.matrix(mdata[,6:ncol(mdata)]))
+dim(M)
+M[1:6,1:5]
+col=rep("black",nrow(M))
+col[1:5]="red"
+rownames(M)=substr(rownames(M),1,4)
+trachy$mds_plot(M,method="spearman",col.labels=col,grid=FALSE)
+abbrev.df=data.frame(abbrev=substr(colnames(mdata)[6:(ncol(mdata))],1,4),
+    family=colnames(mdata)[6:(ncol(mdata))])
+```
+
+**Figure  MDS of plant  families:**  Multidimensional  Scaling of the Spearman
+correlation  based  distances ( D=(1-rho)/2 ) for the plant families. The five
+most abundant  species,  Moraceae  (Mor),  Fagaceae (Fag),  Sapotaceae  (Sap),
+Fabaceae   (Fab)  and  Rubiaceae   (Rub)  are  shown  in  red.  Full  list  of
+abbreviations is given in the supplementary materials.
+
+### MDS of samples
+
+We will now use the aggregated data.
+
+```{r fig.cap="MDS with Spearman correlation as distance measure",fig.width=8,fig.height=8,out.width=800}
+species=list(vmt="Tdel",vht="That",vb="Tger",vx="Tcre")
+colors=list(Tger="#dd7733",Tdel=6,Tcre=3,That=4)
+spec=gsub("_.+","",mdata$code)
+head(spec)
+spec = unlist(species[spec])
+cols=unlist(colors[spec])
+head(cols)
+pchs=c(18,20)[as.numeric(as.factor(mdata$seasonal))]
+S=as.matrix(mdata[,6:ncol(mdata)])
+dim(S)
+trachy$mds_plot(S,
+    method="spearman",points=TRUE,pch=pchs,cex=3,col=cols,row.labels=FALSE,grid=FALSE)
+legend('bottomleft',legend=names(colors)[c(2,4,1,3)],fill=unlist(colors)[c(2,4,1,3)],cex=1.2)
+legend('bottomright',legend=c("Dry","Wet"),pch=c(18,20),cex=1.2,pt.cex=2)
+```
+
+**Figure  MDS of Trachypithecus samples:**  Multidimensional  Scaling of the Spearman
+correlation  based  distances ( D=(1-rho)/2 ) for the average values for each month based of the plant family data.  Every species has up to 12 datapoints, 
+
+### Averages of the MDS
+
+```{r fig=TRUE,fig.width=8,fig.height=8,out.width=800}
+trachy$mds_plot(S,
+    method="spearman",points=TRUE,
+    pch=15,cex=3.2,col=cols,row.labels=FALSE,grid=FALSE,group.mean=TRUE)
+legend('bottomleft',legend=names(colors)[c(2,4,1,3)],fill=unlist(colors)[c(2,4,1,3)],cex=1.2)
+```
+
+
+### MDS plot for every species
+
+```{r fig=TRUE,fig.width=10,fig.height=10,out.width=1000}
+par(mfrow=c(2,2),mai=c(0.7,0.7,0.6,0.2),omi=c(0.5,0.2,0.1,0.1))
+options(warning=-1)
+sp = unique(agg$Species)
+sp = sp[c(2,4,3,1)]
+x = 0
+for (species in sp) {
+    x=x+1
+    mdat=mdata[mdata$species==species,6:ncol(mdata)]
+    idx=which(apply(mdat,2,sum)>5)
+    mdat=mdat[,idx]
+    a=agg[agg$Species==species,colnames(mdat)]
+    colnames(mdat)=substr(colnames(mdat),1,4)
+    lf=log2(a[1,]/a[2,])
+    col=rep("black",length(lf))
+    col[lf < -1] = "blue"
+    col[lf >  1] = "orange"
+    xlab="Dim 1"
+    ylab="Dim 2"
+    if (x %in% c(1,2)) {
+        xlab=""
+    }
+    if (x %in% c(2,4)) {
+        ylab=""
+    }
+    if (x == 1) {
+        par(mai=c(0.5,0.7,0.6,0.1))
+    }
+    if (x == 2) {
+        par(mai=c(0.5,0.6,0.6,0.2))
+    }
+    if (x == 3) {
+        par(mai=c(0.7,0.7,0.4,0.1))
+    }
+    if (x == 4) {
+        par(mai=c(0.7,0.6,0.4,0.2))
+    }
+    trachy$mds_plot(t(mdat),method="spearman",grid=FALSE,main=species,col.labels=col,
+        xlab=xlab,ylab=ylab)
+}
+trachy$bottom_legend(
+    labels=c("dry","same","wet"),col=c("orange","black","blue"),cex=1.5)
+```
+**Figure  MDS of plant  families foreach Trachypithecus species:**  Multidimensional  Scaling of the Spearman
+correlation  based  distances ( D=(1-rho)/2 ) forthe plant families.  Families
+where the  log2-changes  between  wet and dry season are lower than -1 (plants
+found more often in wet  season)  are shown in blue color, and plant  families
+found  more  often in dry  season  (log2-foldchange  > 1) are shown in orange.
+Families not having a log2-foldchange between -1 and 1 are shown in black.
+
+### PCA
+
+```{r fig.width=10,fig.height=10,fig.cap="PCA on plant family abundance data"}
+pca.plot = function (pca,...) {
+    pcasum=summary(pca)$importance[2,] * 100
+    plot(pca$x,...,type="n",xlab=sprintf("PC1 (%.1f%%)",pcasum[1]),
+        ylab=sprintf("PC2 (%.1f%%)",pcasum[2]))
+    #grid()
+    points(pca$x,...)
+}
+par(mfrow=c(2,2))
+pca=prcomp(mdata[,6:(ncol(mdata))])
+pca.plot(pca,col=cols,pch=pchs,cex=3,main="raw data")
+pca=prcomp(scale(mdata[,6:(ncol(mdata))]))
+pca.plot(pca,col=cols,pch=pchs,cex=3,main="scaled data")
+pca=prcomp(scale(log2(mdata[,6:(ncol(mdata))]+1)))
+pca.plot(pca,col=cols,pch=pchs,cex=3,main="scaled log-data")
+pca=prcomp(log2(mdata[,6:(ncol(mdata))]+1))
+pca.plot(pca,col=cols[spec],pch=pchs,cex=3,main="log-data")
+```
+
+**Figure: PCA of plant family abundance  data.** Shown are the results for the
+raw, data, z-score scaled data, log2+1 transformed z-score data and log2-data.
+Regardless of the data normalization all plots show a clear species separation
+and a less  obvious  separation  of the  seasons  for each  species.  The most
+reliable  approach, PCA on log2-1 on the  abundance  data, , which retains the
+increased  impact of high  abundance  plant species on the analysis,  although
+damped due to the log transformation, shows a clear species separation. Symbols and color codes as described above.
+
+```{r fig.width=10,fig.height=10,fig.cap="PCA on log2 plant family abundance data"}
+par(omi=c(1,0.6,0.6,0.3))
+sbi_pca_pairs(pca,n=3,pch=pchs,col=cols,groups=spec,legend=FALSE,cex=3)
+trachy$bottom_legend(labels=names(colors)[c(2,4,3,1)],col=unlist(colors)[c(2,4,3,1)],cex=1.2)
+```
+
+## Genus Data Analysis
+
+```{r}
+genus=trachy$tdata("genus")
+dim(genus)
+genus[1:6,1:12]
+```
+
+### MDS of Plant Genus
+
+```{r fig=TRUE,fig.width=8,fig.height=8,out.width=800}
+par(mai=c(0.8,0.8,0.5,0.2))
+M=t(as.matrix(genus[,3:ncol(mdata)]))
+dim(M)
+M[1:6,1:5]
+col=rep("black",nrow(M))
+col[1:5]="red"
+rownames(M)=substr(rownames(M),1,4)
+trachy$mds_plot(M,method="spearman",col.labels=col,grid=FALSE)
+abbrev.gn=data.frame(abbrev=substr(colnames(genus)[3:(ncol(genus))],1,4),
+    genus=colnames(genus)[3:(ncol(genus))])
+```
+
+**Figure  MDS of plant  families:**  Multidimensional  Scaling of the Spearman
+correlation  based  distances ( D=(1-rho)/2 ) for the plant families. The five
+most abundant  species,  Moraceae  (Mor),  Fagaceae (Fag),  Sapotaceae  (Sap),
+Fabaceae   (Fab)  and  Rubiaceae   (Rub)  are  shown  in  red.  Full  list  of
+abbreviations is given in the supplementary materials.
+
+### Attach Meta Data
+
+```{r}
+dim(genus)
+neta=meta=unique(meta[,c("habitat","species","seasonal","myear")])
+gdata=merge(neta,genus,by.x=c("myear","species"),by.y=c("month","species"))
+dim(gdata)
+gdata[1:5,1:12]
+```
+
+### Season Medians
+
+Let's calculate the season medians. For this we first merge the data:
+
+```{r}
+agg=with(gdata,aggregate(gdata[,5:(ncol(gdata))],
+    by=list(seasonal,species),median))
+colnames(agg)[1]="Season"
+colnames(agg)[2]="Species"
+agg[,1:10]
+```
+
+Let's tabulate this:
+
+```{r results="asis"}
+library(knitr)
+aggr=agg[,1:12]
+aggr[,3:12]=round(aggr[,3:12],1)
+aggr[,2]=gsub(" ","",aggr[,2])
+colnames(aggr)=substr(colnames(aggr),1,6)
+colnames(aggr)[1]="Season"
+colnames(aggr)[2]="Species"
+knitr::kable(aggr)
+```
+
+### Visualization of Plant genus similarities using MDS
+
+```{r fig=TRUE,fig.width=8,fig.height=8,out.width=800}
+par(mai=c(0.8,0.8,0.5,0.2))
+M=t(as.matrix(gdata[,5:ncol(gdata)]))
+dim(M)
+M[1:6,1:5]
+col=rep("black",nrow(M))
+col[1:5]="red"
+rownames(M)=substr(rownames(M),1,4)
+trachy$mds_plot(M,method="spearman",col.labels=col,grid=FALSE)
+```
+
+**Figure  MDS of plant genus:**  Multidimensional  Scaling of the Spearman
+correlation  based  distances ( D=(1-rho)/2 ) for the plant families. The five
+most abundant  genus,  Ficus  (Ficu),  Sideroxylon (Side),  Phanera  (Phan),
+Celtis   (Celt)  and  Dalbergia (Dalb)  are  shown  in  red.  Full  list  of
+abbreviations is given in the supplementary materials.
+
+### MDS for genus data of samples
+
+We will now use the aggregated data.
+
+```{r fig.cap="MDS genus data with Spearman correlation as distance measure",fig.width=8,fig.height=8,out.width=800}
+specg = gsub("T.([a-z]{3}).+","T\\1",gdata$species)
+colsg=unlist(colors[specg])
+head(colsg)
+pchsg=c(18,20)[as.numeric(as.factor(gdata$seasonal))]
+S=as.matrix(gdata[,5:ncol(gdata)])
+dim(S)
+trachy$mds_plot(S,
+    method="spearman",points=TRUE,pch=pchsg,cex=3,col=colsg,row.labels=FALSE,grid=FALSE)
+legend('bottomleft',legend=names(colors)[c(2,4,1,3)],fill=unlist(colors)[c(2,4,1,3)],cex=1.2)
+legend('bottomright',legend=c("Dry","Wet"),pch=c(18,20),cex=1.2,pt.cex=2)
+```
+
+**Figure  MDS of Trachypithecus samples:**  Multidimensional  Scaling of the Spearman
+correlation  based  distances ( D=(1-rho)/2 ) for the average values for each month based of the plant family data.  Every species has up to 12 datapoints, 
+
+### Averages of the MDS
+
+```{r fig=TRUE,fig.width=8,fig.height=8,out.width=800}
+trachy$mds_plot(S,
+    method="spearman",points=TRUE,
+    pch=15,cex=3.2,col=colsg,row.labels=FALSE,grid=FALSE,group.mean=TRUE)
+legend('bottomleft',legend=names(colors)[c(2,4,1,3)],fill=unlist(colors)[c(2,4,1,3)],cex=1.2)    
+```
+
+
+### MDS plot for every species
+
+```{r fig=TRUE,fig.width=10,fig.height=10,out.width=1000}
+par(mfrow=c(2,2),mai=c(0.7,0.7,0.6,0.2),omi=c(0.5,0.2,0.1,0.1))
+options(warning=-1)
+sp = unique(agg$Species)
+sp = sp[c(2,4,3,1)]
+x = 0
+for (species in sp) {
+    x=x+1
+    mdat=gdata[gdata$species==species,5:ncol(gdata)]
+    idx=which(apply(mdat,2,sum)>5)
+    mdat=mdat[,idx]
+    a=agg[agg$Species==species,colnames(mdat)]
+    colnames(mdat)=substr(colnames(mdat),1,4)
+    lf=log2(a[1,]/a[2,])
+    col=rep("black",length(lf))
+    col[lf < -1] = "blue"
+    col[lf >  1] = "orange"
+    xlab="Dim 1"
+    ylab="Dim 2"
+    if (x %in% c(1,2)) {
+        xlab=""
+    }
+    if (x %in% c(2,4)) {
+        ylab=""
+    }
+    if (x == 1) {
+        par(mai=c(0.5,0.7,0.6,0.1))
+    }
+    if (x == 2) {
+        par(mai=c(0.5,0.6,0.6,0.2))
+    }
+    if (x == 3) {
+        par(mai=c(0.7,0.7,0.4,0.1))
+    }
+    if (x == 4) {
+        par(mai=c(0.7,0.6,0.4,0.2))
+    }
+    trachy$mds_plot(t(mdat),method="spearman",grid=FALSE,main=species,col.labels=col,
+        xlab=xlab,ylab=ylab)
+}
+trachy$bottom_legend(
+    labels=c("dry","same","wet"),col=c("orange","black","blue"),cex=1.5)
+```
+
+**Figure  MDS of plant genus foreach Trachypithecus species:**  Multidimensional  Scaling of the Spearman
+correlation  based  distances ( D=(1-rho)/2 ) forthe plant families.  Families
+where the  log2-changes  between  wet and dry season are lower than -1 (plants
+found more often in wet  season)  are shown in blue color, and plant  families
+found  more  often in dry  season  (log2-foldchange  > 1) are shown in orange.
+Families not having a log2-foldchange between -1 and 1 are shown in black.
+
+### PCA
+
+```{r fig.width=10,fig.height=10,fig.cap="PCA on plant genus abundance data"}
+par(mfrow=c(2,2))
+pcg=prcomp(gdata[,5:(ncol(gdata))])
+pca.plot(pcg,col=colsg,pch=pchsg,cex=3,main="raw data")
+pcg=prcomp(scale(gdata[,5:(ncol(gdata))]))
+pca.plot(pcg,col=colsg,pch=pchs,cex=3,main="scaled data")
+pcg=prcomp(scale(log2(gdata[,5:(ncol(gdata))]+1)))
+pca.plot(pcg,col=colsg,pch=pchsg,cex=3,main="scaled log-data")
+pcg=prcomp(log2(gdata[,5:(ncol(gdata))]+1))
+pca.plot(pcg,col=colsg,pch=pchsg,cex=3,main="log-data")
+```
+
+**Figure: PCA of plant genus abundance  data.** Shown are the results for the
+raw, data, z-score scaled data, log2+1 transformed z-score data and log2-data.
+Regardless of the data normalization all plots show a clear species separation
+and a less  obvious  separation  of the  seasons  for each  species.  The most
+reliable  approach, PCA on log2-1 on the  abundance  data, , which retains the
+increased  impact of high  abundance  plant species on the analysis,  although
+damped due to the log transformation, shows a clear species separation. Symbols and color codes as described above.
+
+
+```{r fig.width=10,fig.height=10,fig.cap="PCA on log2 plant genus abundance data"}
+par(omi=c(1,0.6,0.6,0.3))
+sbi_pca_pairs(pcg,n=3,pch=pchsg,col=colsg,groups=spec,legend=FALSE,cex=3)
+trachy$bottom_legend(labels=names(colors)[c(2,4,3,1)],col=unlist(colors)[c(2,4,3,1)],cex=1.2)
+```
+
+
+## Supplementary Materials
+
+
+### PCA of log2 normalized family data:
+
+```{r fig.width=10,fig.height=10,fig.cap="PCA on log2 plant family abundance data"}
+par(omi=c(1,0.6,0.6,0.3))
+sbi_pca_pairs(pca,n=5,pch=pchs,col=cols,groups=spec,legend=FALSE,cex=3)
+trachy$bottom_legend(labels=names(colors)[c(2,3,4,1)],col=unlist(colors)[c(2,3,4,1)],cex=1.2)
+```
+
+### PCA of log2 normalized genus data:
+
+```{r fig.width=10,fig.height=10,fig.cap="PCA on log2 plant genus abundance data"}
+par(omi=c(1,0.6,0.6,0.3))
+sbi_pca_pairs(pcg,n=5,pch=pchsg,col=colsg,groups=specg,legend=FALSE,cex=3)
+trachy$bottom_legend(labels=names(colors)[c(2,3,4,1)],col=unlist(colors)[c(2,3,4,1)],cex=1.2)
+```
+
+
+```{r results="asis"}
+abbrev.df=abbrev.df[order(abbrev.df$abbrev),]
+knitr::kable(abbrev.df)
+```
+
+```{r results="asis"}
+abbrev.gn=abbrev.gn[order(abbrev.gn$abbrev),]
+knitr::kable(abbrev.gn)
+```
+
 
 
 
