@@ -1,12 +1,12 @@
 ---
-title: "Datanalysis for the Trachypithecus Data"
+title: Datanalysis for the Trachypithecus Data
 author: Detlef Groth and Truong Van Nguyen
-date: 2025-07-18 17:18
+date: 2025-07-18
 output: 
     rmarkdown::html_vignette:
         toc: true
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Datanalysis for the Trachypithecus Data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 include-before: |
