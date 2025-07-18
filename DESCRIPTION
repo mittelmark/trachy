@@ -1,12 +1,13 @@
 Package: trachy
 Type: Package
-Title: Your package title change the name on top with no dot at the end
+Title: R package for Trachypithecus MicroBiome data
 Version: 0.0.3
 Date: 2025-07-18
 Authors@R:c( 
     person("Detlef", "Groth", , "dgroth@un-potsdam.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9441-3978")))
 Description: R package for analysis of Trachypithecus microbiome data.
+Depends: R (>= 3.5.0)
 Imports: stats
 URL: https://github.com/mittelmark/trachy
 BugReports: https://github.com/mittelmark/trachy/issues
