@@ -17,6 +17,7 @@ Here the list of functions provided by this package:
 } 
 \examples{ 
 library(trachy) 
+head(trachy$tdata("meta")) 
 }  
 \author{ 
 Detlef Groth, University of Potsdam, \email{dgroth@uni-potsdam.de}, 

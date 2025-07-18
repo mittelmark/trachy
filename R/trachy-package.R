@@ -18,9 +18,14 @@
 #' }
 #' \examples{
 #' library(trachy)
+#' head(trachy$tdata("meta"))
 #' } 
 #' \author{
 #' Detlef Groth, University of Potsdam, \email{dgroth@uni-potsdam.de},
 #' Nguyen Van Truong, University of Potsdam, \email{nguyenvantruong1009@gmail.com}
 #' }
 #'  
+
+"_PACKAGE"
+NULL
+
