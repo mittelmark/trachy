@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +32,7 @@ jobs:
             echo "VRS=$VRS" >> $GITHUB_ENV
             export PKG=`grep Package: DESCRIPTION | sed -E 's/.+: //'`
             echo "PKG=$PKG" >> $GITHUB_ENV
+            Rscript --version
             make build check
             
       - name: Upload Package Release files
