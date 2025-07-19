@@ -33,6 +33,11 @@ jobs:
             export PKG=`grep Package: DESCRIPTION | sed -E 's/.+: //'`
             echo "PKG=$PKG" >> $GITHUB_ENV
             Rscript --version
+            wget https://github.com/mittelmark/sbi/releases/download/v0.1.0/sbi_0.1.0.tar.gz
+            mkdir ~/R
+            R CMD INSTALL sbi_0.1.0.tar.gz -l ~/R
+            export R_LIBS=$HOME/~/R
+            echo "R_LIBS=$R_LIBS" >> $GITHUB_ENV
             make build check
             
       - name: Upload Package Release files
