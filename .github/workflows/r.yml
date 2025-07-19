@@ -37,6 +37,7 @@ jobs:
             mkdir ~/R
             R CMD INSTALL sbi_0.1.0.tar.gz -l ~/R
             export R_LIBS=$HOME/~/R
+            export _R_CHECK_FORCE_SUGGESTS_=0
             echo "R_LIBS=$R_LIBS" >> $GITHUB_ENV
             make build check
             
