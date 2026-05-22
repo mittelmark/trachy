@@ -1,7 +1,7 @@
 ---
 title: "Datanalysis for the Trachypithecus Data"
 author: Detlef Groth and Truong Van Nguyen
-date: 2025-07-18
+date: 2026-05-22
 output: 
     rmarkdown::html_vignette:
         toc: true
@@ -240,6 +240,65 @@ par(omi=c(1,0.6,0.6,0.3))
 sbi_pca_pairs(pca,n=3,pch=pchs,col=cols,groups=spec,legend=FALSE,cex=3)
 trachy$bottom_legend(labels=names(colors)[c(2,4,3,1)],col=unlist(colors)[c(2,4,3,1)],cex=1.2)
 ```
+
+## Loadings of the first component
+
+As it is visible that the first component separates the only species, living on limbstone. We will analyze the loadings of that compnent.
+
+```{r results="asis"}
+knitr::kable(head(pca$rotation[order(pca$rotation[,1],decreasing=TRUE),1:4]))
+```
+
+We can as well create a biplot to visualize those main loadings. for the first two compments:
+
+```{r fig=TRUE,results="asis",fig.width=6,fig.height=6}
+plot(pca$x[,1:2],col=cols[spec],pch=pchs,cex=2)
+grid()
+loadings=pca$rotation
+fac=20
+loadings=loadings[order(abs(loadings[,1]),decreasing=TRUE),]
+arrows(0,0,loadings[1:5,'PC1']*fac,loadings[1:5,'PC2']*fac,
+        length=0.1,angle=20,col='black')
+text(loadings[1:5,'PC1']*fac*1.2,loadings[1:5,'PC2']*fac*1.2,
+       substr(rownames(loadings)[1:5],1,5),col='black',font=2)
+loadings=loadings[order(abs(loadings[,2]),decreasing=TRUE),]       
+arrows(0,0,loadings[1:5,'PC1']*fac,loadings[1:5,'PC2']*fac,
+        length=0.1,angle=20,col='blue')
+text(loadings[1:5,'PC1']*fac*1.2,loadings[1:5,'PC2']*fac*1.2,
+       substr(rownames(loadings)[1:5],1,5),col='blue',font=2)
+```
+
+**Figure: Biplot for PCA of plant family abundance  data.** The arrows show the loadings
+of the original variables. For instance the Fagaceae, the Araliaceae and the Lentibulariaceae families are highly abundant in the T. crepusculus species.
+
+Let's now test that these are significant higher in T. crepusculus, first we compare the mean:
+
+
+
+```{r fig=TRUE,fig.width=10,fig.height=10}
+library(lattice)
+dlog2=as.matrix(log2(mdata[,6:(ncol(mdata))]+1))
+dim(dlog2)
+length(spec)
+bwdata=data.frame(y=c(dlog2[,'Fagaceae'],dlog2[,'Araliaceae'],dlog2[,'Lentibulariaceae'],dlog2[,'Pentaphylacaceae']),
+    family=as.factor(rep(c('Fagaceae','Araliaceae','Pentaphylacaceae','Lentibulariaceae'),each=nrow(dlog2))),
+    species=as.factor(spec))
+summary(bwdata)    
+bwplot(y ~ species | family,data=bwdata)    
+```
+    
+And now the testing:
+
+```{r}
+for (fam in c('Fagaceae','Araliaceae','Pentaphylacaceae','Lentibulariaceae')) {
+    print(fam)
+    raov=aov(dlog2[,fam] ~ as.factor(spec))
+    print(summary(raov))
+    print(sbi_eta_squared(raov))
+    print(pairwise.wilcox.test(dlog2[,fam], as.factor(spec)))
+}   
+```
+
 
 ## Genus Data Analysis
 
