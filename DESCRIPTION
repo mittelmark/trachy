@@ -1,17 +1,21 @@
 Package: trachy
 Type: Package
 Title: R package for Trachypithecus MicroBiome data
-Version: 0.0.3
-Date: 2025-07-18
+Version: 0.0.4
+Date: 2026-05-26
 Authors@R:c( 
-    person("Detlef", "Groth", , "dgroth@un-potsdam.de", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-9441-3978")))
-Description: R package for analysis of Trachypithecus microbiome data.
+    person("Detlef", "Groth", email="dgroth@uni-potsdam.de", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-9441-3978")),
+    person(c("Truong", "Van", "Nguyen"),role=c("ctb"),
+          comment=c(ORCID = "0000-0003-2004-6658")))
+Maintainer: Detlef Groth <dgroth@uni-potsdam.de>
+Description: R package for analysis of Trachypithecus microbiome data for the paper
+ Molecular genetic characterization of the diet of limestone and rainforest langurs (Truong et al 2026).
 Depends: R (>= 3.5.0)
 Imports: stats
 URL: https://github.com/mittelmark/trachy
 BugReports: https://github.com/mittelmark/trachy/issues
-Suggests: knitr, rmarkdown, sbi
+Suggests: knitr, rmarkdown, sbi, lattice
 VignetteBuilder: knitr
 License: MIT + file LICENSE
 NeedsCompilation: no
