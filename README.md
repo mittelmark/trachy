@@ -1,3 +1,8 @@
+[![license](https://img.shields.io/badge/License%20(MIT)-lightgray.svg)](https://opensource.org/license/bsd)
+[![Release](https://img.shields.io/github/v/release/mittelmark/trachy.svg?label=current+release)](https://github.com/mittelmark/trachy/releases)
+![Commits](https://img.shields.io/github/commits-since/mittelmark/trachy/latest)
+[![Vignette&nbsp;HTML](https://img.shields.io/badge/Vignette%20(HTML)-blue)](https://github.com/mittelmark/trachy/releases/latest/download/tutorial.html)
+
 # trachy R package ![](../../actions/workflows/r.yml/badge.svg)
 
 
