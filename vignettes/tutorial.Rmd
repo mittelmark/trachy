@@ -292,10 +292,10 @@ And now the testing:
 ```{r}
 for (fam in c('Fagaceae','Araliaceae','Pentaphylacaceae','Lentibulariaceae')) {
     print(fam)
-    raov=aov(dlog2[,fam] ~ as.factor(spec))
-    print(summary(raov))
-    print(sbi_eta_squared(raov))
-    print(pairwise.wilcox.test(dlog2[,fam], as.factor(spec)))
+    rkt=kruskal.test(as.vector(dlog2[,fam]), as.factor(spec))
+    print(rkt)
+    print(sbi_epsilon_squared(as.vector(dlog2[,fam]), as.factor(spec)))
+    print(pairwise.wilcox.test(as.vector(dlog2[,fam]), as.factor(spec)))
 }   
 ```
 
