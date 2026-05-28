@@ -243,7 +243,8 @@ trachy$bottom_legend(labels=names(colors)[c(2,4,3,1)],col=unlist(colors)[c(2,4,3
 
 ## Loadings of the first component
 
-As it is visible that the first component separates the only species, living on limbstone. We will analyze the loadings of that compnent.
+As it is visible that the first component separates the only species, living in rainforest. 
+We will analyze the loadings of that component.
 
 ```{r results="asis"}
 knitr::kable(head(pca$rotation[order(pca$rotation[,1],decreasing=TRUE),1:4]))
@@ -299,6 +300,39 @@ for (fam in c('Fagaceae','Araliaceae','Pentaphylacaceae','Lentibulariaceae')) {
 }   
 ```
 
+## Loadings of the second component
+
+As it is visible that the second component separates the southern species, living as rainforest species on limbstone. 
+We will analyze the loadings of that component.
+
+```{r results="asis"}
+knitr::kable(head(pca$rotation[order(pca$rotation[,2],decreasing=TRUE),1:4]))
+```
+
+```{r fig=TRUE,fig.width=10,fig.height=10}
+library(lattice)
+dlog2=as.matrix(log2(mdata[,6:(ncol(mdata))]+1))
+dim(dlog2)
+length(spec)
+bwdata=data.frame(y=c(dlog2[,'Combretaceae'],dlog2[,'Phyllanthaceae'],
+    dlog2[,'Vitaceae'],dlog2[,'Sapindaceae']),
+    family=as.factor(rep(c('Combretaceae','Phyllanthaceae','Vitaceae','Sapindaceae'),each=nrow(dlog2))),
+    species=as.factor(spec))
+summary(bwdata)    
+bwplot(y ~ species | family,data=bwdata)    
+```
+    
+And now the testing:
+
+```{r}
+for (fam in c('Combretaceae','Phyllanthaceae','Vitaceae','Sapindaceae')) {
+    print(fam)
+    rkt=kruskal.test(as.vector(dlog2[,fam]), as.factor(spec))
+    print(rkt)
+    print(sbi_epsilon_squared(as.vector(dlog2[,fam]), as.factor(spec)))
+    print(pairwise.wilcox.test(as.vector(dlog2[,fam]), as.factor(spec)))
+}   
+```
 
 ## Genus Data Analysis
 
