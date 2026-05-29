@@ -19,7 +19,7 @@ The following data sets are supported:
 } 
 \references{ 
   \itemize{ 
-    \item Truong et. al.(2025).: DNA metabarcoding reveals dietary adaptations of Trachypithecus langurs in limestone and rainforest habitats. (in preparation) 
+    \item Truong et. al.(2026).: DNA metabarcoding reveals dietary adaptations of Trachypithecus langurs in limestone and rainforest habitats. (in preparation) 
   } 
 } 
 \value{data frame  for the selected data set} 
