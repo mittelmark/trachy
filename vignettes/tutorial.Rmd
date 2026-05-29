@@ -1,7 +1,7 @@
 ---
 title: "Datanalysis for the Trachypithecus Data"
 author: Detlef Groth and Truong Van Nguyen
-date: 2026-05-26
+date: 2026-05-29
 output: 
     rmarkdown::html_vignette:
         toc: true
@@ -121,6 +121,7 @@ Fabaceae   (Fab)  and  Rubiaceae   (Rub)  are  shown  in  red.  Full  list  of
 abbreviations is given in the supplementary materials.
 
 ### MDS of samples
+        
 
 We will now use the aggregated data.
 
@@ -282,10 +283,11 @@ dlog2=as.matrix(log2(mdata[,6:(ncol(mdata))]+1))
 dim(dlog2)
 length(spec)
 bwdata=data.frame(y=c(dlog2[,'Fagaceae'],dlog2[,'Araliaceae'],dlog2[,'Lentibulariaceae'],dlog2[,'Pentaphylacaceae']),
-    family=as.factor(rep(c('Fagaceae','Araliaceae','Pentaphylacaceae','Lentibulariaceae'),each=nrow(dlog2))),
+    family=as.factor(rep(c('Fagaceae','Araliaceae','Lentibulariaceae','Pentaphylacaceae'),each=nrow(dlog2))),
     species=as.factor(spec))
 summary(bwdata)    
 bwplot(y ~ species | family,data=bwdata)    
+saveRDS(cbind(spec=spec,mdata),file="~/mdata.RDS")
 ```
     
 And now the testing:
@@ -333,6 +335,62 @@ for (fam in c('Combretaceae','Phyllanthaceae','Vitaceae','Sapindaceae')) {
     print(pairwise.wilcox.test(as.vector(dlog2[,fam]), as.factor(spec)))
 }   
 ```
+
+## Family based comparisons
+
+We will  loop  over  all  plantfamilies  and  compute  the  kruskal  test  and
+thereafter  a  Wilcox  test of Tcre (C)  against  all the  others  (DGH),  the
+Tcre+Tger (CG) against Tdel+That (DH).
+
+Let's first create these classes:
+
+```{r}
+suppressWarnings({
+R=trachy_summary_data(mdata,spec)
+})
+saveRDS(R,file="~/.R.RDS")
+```
+
+Let's now plot the  significant  comparisons  between  the habitat  groups and
+visualize the top ten highest effect sizes of Wilcoxon R. We display the value as negative if the second group has larger mean values then the first. Another requirement is that at least for one species the maximum percentage value of that value must be in one setting, dry or wet season above 1%.
+
+```{r label=effsize,fig=TRUE,fig.width=6,fig.height=12,out.width=800}
+par(mfrow=c(2,1),mai=c(0.3,0.9,0.9,0.2))
+sset=R[,c('max','wt.habitat.pvalue','wt.habitat.r','C','DGH')]
+idx=which(sset[,'C']<sset['DGH'])
+sset$wt.habitat.r[idx]=sset$wt.habitat.r[idx]*-1
+idx=which(sset$wt.habitat.pvalue<0.05 & sset$max>1)
+sset=sset[idx,]
+sset=sset[order(abs(sset$wt.habitat.r),decreasing=TRUE),]
+trachy_es_plot(sset$wt.habitat.r[1:10],substr(rownames(sset)[1:10],1,4),main="Tcre vs Tdel+Tger+That",
+  ylab="Wilcoxon Effect Size (r)")
+sset=R[,c('max','wt.habspec.pvalue','wt.habspec.r','CG','DH')]
+idx=which(sset[,'CG']<sset['DH'])
+sset$wt.habspec.r[idx]=sset$wt.habspec.r[idx]*-1
+idx=which(sset$wt.habspec.pvalue<0.05 & sset$max>1)
+sset=sset[idx,]
+sset=sset[order(abs(sset$wt.habspec.r),decreasing=TRUE),]
+trachy_es_plot(sset$wt.habspec.r[1:10],substr(rownames(sset)[1:10],1,4),main="Tcre+Tger vs Tdel+That",
+    ylab="Wilcoxon R Effect Size")
+###trachy_es_plot(runif(10,min=-1,max=1),LETTERS[1:10])
+```
+
+Let's describe the columnnames of the final Excel file:
+
+- 'max' - the maximumn value for all species in percent
+- 'kt.pvalue' - the p-value for the Kruskal-Wallis test
+- 'epsq' - the epsilon squared effect size for the Kruskal-Wallis test
+- 'wt.habitat.pvalue' - the p-value of a Wilcoxon test for the comparison of Tcre vs Tdel+Tger+That
+- 'wt.habitat.r' - the Wilcoxon effect size (r) for that Wilcoxon test for the comparison of Tcre vs Tdel+Tger+That
+- 'wt.habspec.pvalue' - the p-value of a Wilcoxon test for the comparison of Tcre+Tger vs Tdel+That
+- 'wt.habspec.r' - the Wilcoxon effect size (r) for that Wilcoxon test for the comparison of Tcre+Tger vs Tdel+That
+- 'Tcre','Tdel','Tger','That' - the mean values for these species
+- 'C' - the mean value for 'Tcre'
+- 'DGH' - the mean values for the three species  'Tdel','Tger' and 'That' taken together
+- 'CH' - the mean value for 'Tcre' and 'Tger' taken together
+- 'DH' - the mean values for the three species  'Tdel', and 'That' taken together
+- 'PC1' - the loadings/rotations for the first component of the original data log2(x+1) transformed
+- 'PC2' - the loadings/rotations for the second component of the original data log2(x+1) transformed
 
 ## Genus Data Analysis
 

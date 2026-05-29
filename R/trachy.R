@@ -224,4 +224,130 @@ trachy$tdata <- function (name="meta") {
   }
 }
 trachy_tdata = trachy$tdata
-    
+
+#' \name{trachy$summary_data}
+#' \alias{trachy$summary_data}
+#' \alias{trachy_summary_data}
+#' \title{Retrieve trachy dummary data with p-values, effect sizes etc}
+#' \description{Retrieve the summary data ready for export into Excel etc.}
+#' \usage{trachy_summary_data(mdata,spec)}
+#' \arguments{
+#'   \item{mdata}{The preprocessed data frame, sign vignette for example.}
+#'   \item{spec}{abbreviated species names like 'Tdel', 'Tger' etc, vector of length of nrow(mdata)}
+#' }
+#' \value{data frame with summary data}
+#' \examples{
+#' meta <- trachy$tdata(name = "meta")
+#' fmly=trachy$tdata('family')
+#' mdata=merge(fmly,unique(meta[,c('habitat','code','seasonal')]))
+#' species=list(vmt="Tdel",vht="That",vb="Tger",vx="Tcre")
+#' spec=gsub("_.+","",mdata$code)
+#' head(spec)
+#' spec = unlist(species[spec])
+#' }
+#' \seealso{\link[trachy:trachy-package]{trachy-package}}
+
+trachy$summary_data = function (mdata,spec) {
+    Habitat=rep("DGH",length(spec))
+    Habitat[spec=="Tcre"]="C"
+    Habitat=as.factor(Habitat)
+    Habspec=rep("CG",length(spec))
+    Habspec[spec %in% c("Tdel","That")]="DH"
+    Habspec=as.factor(Habspec)
+    ndata=cbind(spec=spec,mdata)
+    M=ndata[,7:ncol(mdata)]
+    M=prop.table(as.matrix(ndata[,7:ncol(ndata)]),1)*100
+    maxm=apply(M,2,max)
+    R=data.frame(family=colnames(M),max=as.vector(maxm))
+    kt.pvals=c()
+    wth.pvals=c()
+    wth.wr=c()
+    wts.pvals=c()
+    wts.wr=c()
+    eps=c()
+    for (n in colnames(M)) { 
+        rkt=stats::kruskal.test(as.vector(M[,n]),ndata[,'spec']); 
+        kt.pvals=c(kt.pvals,rkt$p.value)
+        eps=c(eps,sbi::sbi_epsilon_squared(as.vector(ndata[,n]),as.factor(spec)))
+        wct=stats::wilcox.test(as.vector(M[,n])~Habitat)
+        wth.pvals=c(wth.pvals,wct$p.value)
+        wth.wr=c(wth.wr,sbi::sbi_wilcoxR(as.vector(M[,n]),Habitat))
+        wct=stats::wilcox.test(as.vector(M[,n])~Habspec)
+        wts.pvals=c(wts.pvals,wct$p.value)
+        wts.wr=c(wts.wr,sbi::sbi_wilcoxR(as.vector(M[,n]),Habspec))
+    }
+    R=cbind(R,kt.pvals=kt.pvals,epsq=eps,
+            wt.habitat.pvalue=wth.pvals,wt.habitat.r=wth.wr,
+            wt.habspec.pvalue=wts.pvals,wt.habspec.r=wts.wr)
+    agg=aggregate(ndata[,7:ncol(ndata)],by=list(spec),mean)
+    rownames(agg)=agg[,1]
+    agg=agg[,-1]
+    agg=t(agg)
+    ### aggregating Tcre (C) vs Tdel+Tger+That (DGH)
+    aggh=aggregate(ndata[,7:ncol(ndata)],by=list(Habitat),mean)
+    rownames(aggh)=aggh[,1]
+    aggh=aggh[,-1]
+    aggh=t(aggh)
+    ### aggregating Tcre+Tger (CG) vs Tdel+That (DH)
+    aggg=aggregate(ndata[,7:ncol(ndata)],by=list(Habspec),mean)
+    rownames(aggg)=aggg[,1]
+    aggg=aggg[,-1]
+    aggg=t(aggg)
+    pca=stats::prcomp(log2(mdata[,6:ncol(mdata)]+1))
+    R=cbind(R,agg,aggh,aggg,PC1=pca$rotation[,1],PC2=pca$rotation[,2])
+    return(R)
+}
+trachy_summary_data = trachy$summary_data
+
+#' \name{trachy$es_plot}
+#' \alias{trachy$es_plot}
+#' \alias{trachy_es_plot}
+#' \title{ Plot a effect sizes using a barplot like display }
+#' \description{
+#'     This is a convinience method to plot a vector of effect size values and names using a barplot.
+#' }
+#' \usage{ trachy_es_plot(x,names,col=c('skyblue','salmon'), 
+#'  ylab="Effect Size", ylim=c(-1,1), ...) 
+#' }
+#' \arguments{
+#'   \item{x}{
+#'     vector of values in the range of -1 to 1 usually.
+#'   }
+#'   \item{names}{
+#'     the labels which should be displayed below or above of the bars.
+#'   }
+#'   \item{col}{vector of two colors, for positive effect sizes the first element, for negative ones the second, default: c('skyblue','salmon')}
+#'   \item{ylab}{label for the y-axis, default' 'Effect Size')}
+#'   \item{ylim}{the limits for the y-axis, default: c(-1,1)}
+#'   \item{\ldots}{delegating all remaining arguments to the internal plot call}
+#' }
+#' \value{NULL}
+#' \examples{
+#' trachy_es_plot(runif(10,min=-1,max=1),LETTERS[1:10],main="sample effect sizes")
+#' }
+#' \seealso{
+#'    \link[trachy:trachy-class]{trachy-class} 
+#' }
+#'
+
+trachy$es_plot <- function (x,names,col=c("skyblue","salmon"), 
+                            ylab="Effect Size",ylim=c(-1,1),...) {
+    x=x[order(x,decreasing=TRUE)]
+    names=names[order(x,decreasing=TRUE)]
+    plot(1,type="n",xlim=c(0,length(names)),ylim=ylim,
+         ylab=ylab,xlab="",axes=FALSE,...)
+    axis(2); box()
+    grid()
+    for (i in 1:length(x)) {
+        if (x[i]>0) {
+            rect(i-0.9,0.0,i-0.1,x[i],col=col[1])
+            text(i-0.5,-0.07,names[i])
+
+        } else {
+            rect(i-0.9,x[i],i-0.1,0,col=col[2])
+            text(i-0.5,0.07,names[i])
+        }
+     }   
+}
+
+trachy_es_plot = trachy$es_plot
