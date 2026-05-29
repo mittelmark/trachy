@@ -358,8 +358,10 @@ trachy_summary_data = trachy$summary_data
 
 trachy$es_plot <- function (x,names,col=c("skyblue","salmon"), 
                             ylab="Effect Size",ylim=c(-1,1),...) {
-    x=x[order(x,decreasing=TRUE)]
-    names=names[order(x,decreasing=TRUE)]
+    names(x)=names
+    x=sort(x,decreasing=TRUE)
+    #x=x[order(x,decreasing=TRUE)]
+    #names=names[order(x,decreasing=TRUE)]
     plot(1,type="n",xlim=c(0,length(names)),ylim=ylim,
          ylab=ylab,xlab="",axes=FALSE,...)
     axis(2); box()
@@ -367,11 +369,11 @@ trachy$es_plot <- function (x,names,col=c("skyblue","salmon"),
     for (i in 1:length(x)) {
         if (x[i]>0) {
             rect(i-0.9,0.0,i-0.1,x[i],col=col[1])
-            text(i-0.5,-0.07,names[i])
+            text(i-0.5,-0.07,names(x)[i])
 
         } else {
             rect(i-0.9,x[i],i-0.1,0,col=col[2])
-            text(i-0.5,0.07,names[i])
+            text(i-0.5,0.07,names(x)[i])
         }
      }   
 }

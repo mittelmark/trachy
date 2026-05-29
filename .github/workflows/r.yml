@@ -22,9 +22,10 @@ jobs:
     runs-on: ubuntu-24.04
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Process and Create Package Structure
         run: |
+            sudo apt update && sudo apt upgrade
             sudo apt install r-cran-knitr texlive-latex-base texlive-fonts-recommended
             sudo apt install texlive-fonts-extra texlive-latex-extra
 
@@ -49,7 +50,7 @@ jobs:
             pwd
             
       - name: Upload Package Release files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with: 
           name: ${{ env.PKG }}_${{ env.VRS }}
           path: release/*

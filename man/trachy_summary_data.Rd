@@ -34,7 +34,7 @@ species=list(vmt="Tdel",vht="That",vb="Tger",vx="Tcre")
 spec=gsub("_.+","",mdata$code) 
 head(spec) 
 spec = unlist(species[spec]) 
-R=trachy_summary_data(mdata,spec) 
+R=trachy$summary_data(mdata,spec) 
 sset=R[,c('max','wt.habitat.pvalue','wt.habitat.r','C','DGH')] 
 idx=which(sset[,'C']<sset['DGH']) 
 sset$wt.habitat.r[idx]=sset$wt.habitat.r[idx]*-1 

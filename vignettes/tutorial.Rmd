@@ -348,7 +348,6 @@ Let's first create these classes:
 suppressWarnings({
 R=trachy_summary_data(mdata,spec)
 })
-saveRDS(R,file="~/.R.RDS")
 ```
 
 Let's now plot the  significant  comparisons  between  the habitat  groups and
@@ -357,22 +356,38 @@ visualize the top ten highest effect sizes of Wilcoxon R. We display the value a
 ```{r label=effsize,fig=TRUE,fig.width=6,fig.height=12,out.width=800}
 par(mfrow=c(2,1),mai=c(0.3,0.9,0.9,0.2))
 sset=R[,c('max','wt.habitat.pvalue','wt.habitat.r','C','DGH')]
-idx=which(sset[,'C']<sset['DGH'])
-sset$wt.habitat.r[idx]=sset$wt.habitat.r[idx]*-1
+idx=which(sset[,'C']<sset[,'DGH'])
+sset$wt.habitat.r[idx]=-sset$wt.habitat.r[idx]
 idx=which(sset$wt.habitat.pvalue<0.05 & sset$max>1)
 sset=sset[idx,]
+rownames(sset)
+rn1=rownames(sset)
+print(length(rownames(sset)))
+print(sset[1:10,])
 sset=sset[order(abs(sset$wt.habitat.r),decreasing=TRUE),]
-trachy_es_plot(sset$wt.habitat.r[1:10],substr(rownames(sset)[1:10],1,4),main="Tcre vs Tdel+Tger+That",
-  ylab="Wilcoxon Effect Size (r)")
+trachy_es_plot(sset$wt.habitat.r[1:10],substr(rownames(sset)[1:10],1,4),
+    main="Tcre vs Tdel+Tger+That",
+    ylab="Wilcoxon Effect Size (r)")
 sset=R[,c('max','wt.habspec.pvalue','wt.habspec.r','CG','DH')]
-idx=which(sset[,'CG']<sset['DH'])
-sset$wt.habspec.r[idx]=sset$wt.habspec.r[idx]*-1
+idx=which(sset[,'CG']<sset[,'DH'])
+sset$wt.habspec.r[idx]=-sset$wt.habspec.r[idx]
 idx=which(sset$wt.habspec.pvalue<0.05 & sset$max>1)
 sset=sset[idx,]
 sset=sset[order(abs(sset$wt.habspec.r),decreasing=TRUE),]
-trachy_es_plot(sset$wt.habspec.r[1:10],substr(rownames(sset)[1:10],1,4),main="Tcre+Tger vs Tdel+That",
+rownames(sset)
+print(length(rownames(sset)))
+print(sset[1:10,])
+trachy_es_plot(sset$wt.habspec.r[1:10],
+    substr(rownames(sset)[1:10],1,4),
+    main="Tcre+Tger vs Tdel+That",
     ylab="Wilcoxon R Effect Size")
-###trachy_es_plot(runif(10,min=-1,max=1),LETTERS[1:10])
+rn2=rownames(sset)    
+nset=as.matrix(R[,c('Tcre','Tdel','Tger','That')])
+nset=round(prop.table(nset,2)*100,3)
+rownames(nset)=rownames(R)
+nset=nset[union(rn1,rn2),]
+saveRDS(list(Results=R,Percentages=nset,MainData=mdata),file="~/.R.RDS")
+
 ```
 
 Let's describe the columnnames of the final Excel file:
@@ -391,6 +406,14 @@ Let's describe the columnnames of the final Excel file:
 - 'DH' - the mean values for the three species  'Tdel', and 'That' taken together
 - 'PC1' - the loadings/rotations for the first component of the original data log2(x+1) transformed
 - 'PC2' - the loadings/rotations for the second component of the original data log2(x+1) transformed
+
+## Venn
+
+```{r fig=TRUE,width=8,height=8,out.width=600}
+par(mai=c(0.1,0.1,0.1,0.1))
+sbi_venn(rn1,rn2,vars=c("C vs DGH","CG vs DH"),cex=1.2)
+intersect(rn1,rn2)
+```
 
 ## Genus Data Analysis
 
