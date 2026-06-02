@@ -383,7 +383,10 @@ trachy_es_plot(sset$wt.habspec.r[1:10],
     ylab="Wilcoxon R Effect Size")
 rn2=rownames(sset)    
 nset=as.matrix(R[,c('Tcre','Tdel','Tger','That')])
-nset=round(prop.table(nset,2)*100,3)
+nset=round(prop.table(nset,2)* 100 ,3)
+nset=cbind(nset,R[,c('wt.habitat.pvalue','wt.habspec.pvalue')])
+nset=cbind(nset,wt.habitat.bh=p.adjust(R[,'wt.habitat.pvalue'],method="BH"))
+nset=cbind(nset,wt.habspec.bh=p.adjust(R[,'wt.habspec.pvalue'],method="BH"))
 rownames(nset)=rownames(R)
 nset=nset[union(rn1,rn2),]
 saveRDS(list(Results=R,Percentages=nset,MainData=mdata),file="~/.R.RDS")
