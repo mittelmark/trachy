@@ -21,13 +21,13 @@ The steps after you installed R are as follows:
 ```
 $ R 
 > install.packages("https://github.com/mittelmark/sbi/releases/download/v0.4.2/sbi_0.4.2.tar.gz",repos=NULL)
-> install.packages("https://github.com/mittelmark/trachy/releases/download/v0.0.4/trachy_0.0.4.tar.gz",repos=NULL)
+> install.packages("https://github.com/mittelmark/trachy/releases/download/v0.1.0/trachy_0.1.0.tar.gz",repos=NULL)
 
 ```
 
-## Author and Copyright
+## Authors and Copyright
 
-Author: Detlef Groth (Bioinformatics group, University of Potsdam, Germany), Nguyen Van Truong
+Authors: Detlef Groth (Bioinformatics group, University of Potsdam, Germany), Nguyen Van Truong
 (Evolutionary Adaptive Genomics, University of Potsdam, Primate Genetics Laboratory, German Primate Center,
 Leibniz Institute for Primate Research, Central Institute for Natural Resources and Environmental Studies,
 Vietnam National University, Hanoi, Vietnam).
