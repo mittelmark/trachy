@@ -2,6 +2,7 @@
 [![Release](https://img.shields.io/github/v/release/mittelmark/trachy.svg?label=current+release)](https://github.com/mittelmark/trachy/releases)
 ![Commits](https://img.shields.io/github/commits-since/mittelmark/trachy/latest)
 [![Vignette&nbsp;HTML](https://img.shields.io/badge/Vignette%20(HTML)-blue)](https://github.com/mittelmark/trachy/releases/latest/download/tutorial.html)
+[![Manual&nbsp;PDF](https://img.shields.io/badge/Maunual%20(PDF)-blue)](https://github.com/mittelmark/trachy/releases/latest/download/trachy-manual.pdf)
 
 # trachy R package ![](../../actions/workflows/r.yml/badge.svg)
 
